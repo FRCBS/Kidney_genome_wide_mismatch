@@ -1,8 +1,10 @@
+#!/bin/env Rscript --no-save
 ###############################################################################
 ### Recipient and donor genome-wide matching: imputed missense variants 
 # transmembrane and secretory proteins
 # 210426
 ###############################################################################
+# Required packages
 
 library(data.table)
 library(tidyverse)
