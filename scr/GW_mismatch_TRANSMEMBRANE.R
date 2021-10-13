@@ -1,3 +1,4 @@
+#!/bin/env Rscript --no-save
 ###############################################################################
 ### Recipient and donor genome-wide matching: imputed missense variants 
 # transmembrane proteins
