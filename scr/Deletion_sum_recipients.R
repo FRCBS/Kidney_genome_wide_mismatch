@@ -1,3 +1,5 @@
+
+#!/bin/env Rscript --no-save
 ###############################################################################
 # 210503
 # Deletion sum for patients and donors
