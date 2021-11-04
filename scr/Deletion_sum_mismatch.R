@@ -1,3 +1,4 @@
+#!/bin/env Rscript --no-save
 ###############################################################################
 # 210525
 # Deletion sum between donor and recipient
