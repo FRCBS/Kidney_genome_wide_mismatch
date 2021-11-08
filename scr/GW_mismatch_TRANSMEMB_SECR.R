@@ -2,7 +2,6 @@
 ###############################################################################
 ### Recipient and donor genome-wide matching: imputed missense variants 
 # transmembrane and secretory proteins
-# 210426
 ###############################################################################
 # Required packages
 
@@ -17,11 +16,11 @@ library(broom)
 ### with final dataset of 1025 patients and their donors
 
 # First importing the phenotype files for both recipients and donors
-Recipients_1025 <- read_table2("~/Kidney_analyses/Results_new/Mm_and_deletion_analyses/Recipients_1025.txt")
-Donors_1025 <- read_excel("~/Kidney_analyses/Results_new/Mm_and_deletion_analyses/Donors_1025.xlsx")
+Recipients_1025 <- read_table2("results/Mm_and_deletion_analyses/Recipients_1025.txt")
+Donors_1025 <- read_excel("results/Mm_and_deletion_analyses/Donors_1025.xlsx")
 
 # Read dosage files containing imputed missense SNPs for secretory and transmembrane proteins
-KIDNEY_missense_transmemb_secr_dosage <- read_table2("~/Kidney_analyses/Results_new/KIDNEY_missense_transmemb_secr_dosage.raw")
+KIDNEY_missense_transmemb_secr_dosage <- read_table2("results_new/KIDNEY_missense_transmemb_secr_dosage.raw")
 
 # Join dosage files with phenotype files (both recipient and donor files)
 R_dos_pheno_1025 <- inner_join(Recipients_1025, KIDNEY_missense_transmemb_secr_dosage, by = c("Family_ID" = "IID")) %>% 
