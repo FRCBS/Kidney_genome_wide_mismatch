@@ -2,7 +2,6 @@
 ###############################################################################
 ### Recipient and donor genome-wide matching: imputed missense variants 
 # transmembrane proteins
-# 210426
 ###############################################################################
 
 library(data.table)
