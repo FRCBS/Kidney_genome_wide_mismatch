@@ -1,7 +1,6 @@
 ###############################################################################
 # Surival analysis for all deletion-tagging SNP:s
 # for RECIPIENT-ONLY data of 1025 individuals
-# 210427
 ###############################################################################
 
 library(tidyverse)
@@ -14,13 +13,13 @@ library(janitor)
 # CONTINUING WITH THE COVARIATE FILE FROM PREVIOUS MM ANALYSIS OF ALL MISSENSE SNPs
 
 # Import Covariate file for recipients
-R_covariates_mm_all <- read_table2("~/Kidney_analyses/Results_new/Mm_and_deletion_analyses/R_covariates_mm_all.txt")
+R_covariates <- read_table2("results/Mm_and_deletion_analyses/R_covariates_mm_all.txt")
 
 # Import dosage file for deletion-tagged SNPs (including 40 deletions)
-KIDNEY_DELS_dosage <- read_table2("~/Kidney_analyses/Results_new/KIDNEY_DELS_dosage.raw")
+KIDNEY_DELS_dosage <- read_table2("results/KIDNEY_DELS_dosage.raw")
 
 # Join dosage file with covariate file
-R_dos_pheno_dels <- inner_join(R_covariates_mm_all, KIDNEY_DELS_dosage, by = c("Family_ID" = "IID")) %>% 
+R_dos_pheno_dels <- inner_join(R_covariates, KIDNEY_DELS_dosage, by = c("Family_ID" = "IID")) %>% 
   select(-FID, -PAT, -MAT, -SEX, -PHENOTYPE)
 
 # Recoding the SNPs accordingly:
@@ -101,7 +100,7 @@ R_dos_pheno_dels$rs4882017 <- recode(R_dos_pheno_dels$chr11_48548630_A_G_A, '2' 
 R_dos_pheno_dels$rs4882017 <- recode(R_dos_pheno_dels$rs4882017, '0' = 2)
 
 # Write out the table
-write.table(R_dos_pheno_dels, file = "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/R_covariates_deletions.txt", 
+write.table(R_dos_pheno_dels, file = "results/Mm_and_deletion_analyses/R_covariates_deletions.txt", 
             quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 ###############################################################################
@@ -878,13 +877,13 @@ coxph(Surv(Time_to_event_months, Rejection) ~ rs4882017 + R_Age + D_Age + R_Gend
 # analysis
 
 # Import Covariate file for donors
-D_covariates_mm_all <- read_table2("~/Kidney_analyses/Results_new/Mm_and_deletion_analyses/D_covariates_mm_all.txt")
+D_covariates <- read_table2("results/Mm_and_deletion_analyses/D_covariates_mm_all.txt")
 
 # Import dosage file for deletion-tagged SNPs (including 40 deletions)
-KIDNEY_DELS_dosage <- read_table2("~/Kidney_analyses/Results_new/KIDNEY_DELS_dosage.raw")
+KIDNEY_DELS_dosage <- read_table2("results/KIDNEY_DELS_dosage.raw")
 
 # Join dosage file with covariate file
-D_dos_pheno_dels <- inner_join(D_covariates_mm_all, KIDNEY_DELS_dosage, by = c("Family_ID" = "IID")) %>% 
+D_dos_pheno_dels <- inner_join(D_covariates, KIDNEY_DELS_dosage, by = c("Family_ID" = "IID")) %>% 
   select(-FID, -PAT, -MAT, -SEX, -PHENOTYPE)
 
 # Recoding the SNPs accordingly:
@@ -963,5 +962,5 @@ D_dos_pheno_dels$rs4882017 <- recode(D_dos_pheno_dels$chr11_48548630_A_G_A, '2' 
 D_dos_pheno_dels$rs4882017 <- recode(D_dos_pheno_dels$rs4882017, '0' = 2)
 
 # Write out the table
-write.table(D_dos_pheno_dels, file = "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/D_covariates_deletions.txt", 
+write.table(D_dos_pheno_dels, file = "results/Mm_and_deletion_analyses/D_covariates_deletions.txt", 
             quote = FALSE, row.names = FALSE, col.names = TRUE)
