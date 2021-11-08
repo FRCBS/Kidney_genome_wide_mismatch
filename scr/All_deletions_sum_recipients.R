@@ -1,7 +1,6 @@
 
 #!/bin/env Rscript --no-save
 ###############################################################################
-# 210503
 # Deletion sum for patients and donors
 
 # CONTINUING WITH THE COVARIATE FILES FROM PREVIOUS script in which we created the files
@@ -10,8 +9,8 @@
 # Calculating the sum of deletions 
 
 # Importing the covariate files 
-R_dos_pheno_dels <- read_table2("~/Kidney_analyses/Results_new/Mm_and_deletion_analyses/R_covariates_deletions_0_1.txt")
-D_dos_pheno_dels <- read_table2("~/Kidney_analyses/Results_new/Mm_and_deletion_analyses/D_covariates_deletions_0_1.txt")
+R_covariates <- read_table2("results/Mm_and_deletion_analyses/R_covariates_deletions_0_1.txt")
+D_covariates <- read_table2("results/Mm_and_deletion_analyses/D_covariates_deletions_0_1.txt")
 
 # In these files, the SNPs are coded accordingly:
 # 0 = homozygous for major allele or heterozygous (no deletions)
@@ -27,11 +26,11 @@ D_dos_pheno_sum$Del_sum <- c(Del_sum = rowSums(D_dos_pheno_dels[167:206]))
 
 # Write out the tables
 write.table(R_dos_pheno_sum, 
-            file = "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/R_covariates_deletions_sum.txt", 
+            file = "results/Mm_and_deletion_analyses/R_covariates_deletions_sum.txt", 
             quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 write.table(D_dos_pheno_sum, 
-            file = "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/D_covariates_deletions_sum.txt", 
+            file = "results/Mm_and_deletion_analyses/D_covariates_deletions_sum.txt", 
             quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 ###############################################################################
@@ -50,7 +49,7 @@ glm_delsum_adjusted <- glm(Rejection ~ Del_sum + R_Gender + D_Gender + R_Age + D
 summary(glm_delsum_adjusted)
 
 write.table(tidy(glm_delsum_adjusted), 
-            "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/glm_delsum_adjusted",
+            "results/Mm_and_deletion_analyses/glm_delsum_adjusted",
             sep = "\t", quote = F, row.names = F)
 
 # OR and 95% CI
