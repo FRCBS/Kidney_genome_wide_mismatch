@@ -2,7 +2,6 @@
 ###############################################################################
 ### Recipient and donor genome-wide matching: imputed missense variants 
 # kidney-expressed proteins
-# 210426
 ###############################################################################
 
 library(data.table)
@@ -17,17 +16,17 @@ library(broom)
 # CONTINUING WITH THE COVARIATE FILES FROM PREVIOUS MM ANALYSIS OF TRANSMEMBRANE PROTEINS
 
 # Importing the phenotype files for both recipients and donors
-R_covariates_mm_transmembrane <- read_table2("~/Kidney_analyses/Results_new/Mm_and_deletion_analyses/R_covariates_mm_transmembrane.txt")
-D_covariates_mm_transmembrane <- read_table2("~/Kidney_analyses/Results_new/Mm_and_deletion_analyses/D_covariates_mm_transmembrane.txt")
+R_covariates <- read_table2("results/Mm_and_deletion_analyses/R_covariates_mm_transmembrane.txt")
+D_covariates <- read_table2("results/Mm_and_deletion_analyses/D_covariates_mm_transmembrane.txt")
 
 # Read dosage files containing imputed missense SNPs for kidney-expressed proteins
-KIDNEY_missense_KIDNEY_dosage <- read_table2("~/Kidney_analyses/Results_new/KIDNEY_missense_KIDNEY_dosage.raw")
+KIDNEY_missense_KIDNEY_dosage <- read_table2("results/KIDNEY_missense_KIDNEY_dosage.raw")
 
 # Join dosage files with phenotype files (both recipient and donor files)
-R_dos_pheno_kidney <- inner_join(R_covariates_mm_transmembrane, KIDNEY_missense_KIDNEY_dosage, by = c("Family_ID" = "IID")) %>% 
+R_dos_pheno_kidney <- inner_join(R_covariates, KIDNEY_missense_KIDNEY_dosage, by = c("Family_ID" = "IID")) %>% 
   select(-FID, -PAT, -MAT, -SEX, -PHENOTYPE)
 
-D_dos_pheno_kidney <- inner_join(D_covariates_mm_transmembrane, KIDNEY_missense_KIDNEY_dosage, by = c("Family_ID" = "IID")) %>% 
+D_dos_pheno_kidney <- inner_join(D_covariates, KIDNEY_missense_KIDNEY_dosage, by = c("Family_ID" = "IID")) %>% 
   select(-FID, -PAT, -MAT, -SEX, -PHENOTYPE)
 
 # Remove extra columns (leave only 'pair' and dosage-columns)
@@ -76,17 +75,17 @@ Mm_kidney_result_df <- data.frame(Pair=R_paired_dosage_kidney$Pair, Mm_kidney=ro
 
 
 # Match phenotype files with adjusted R/D mismatches, recipients:
-R_covariates_mm_kidney <- inner_join(R_covariates_mm_transmembrane, Mm_kidney_result_df, by = "Pair")
+R_covariates_mm_kidney <- inner_join(R_covariates, Mm_kidney_result_df, by = "Pair")
 
 # Also, the same for donors:
-D_covariates_mm_kidney <- inner_join(D_covariates_mm_transmembrane, Mm_kidney_result_df, by = "Pair")
+D_covariates_mm_kidney <- inner_join(D_covariates, Mm_kidney_result_df, by = "Pair")
 
 # Writing out the covariate table including mm sum of kidney-expressed proteins, recipients:
-write.table(R_covariates_mm_kidney, file = "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/R_covariates_mm_kidney.txt", 
+write.table(R_covariates_mm_kidney, file = "results/Mm_and_deletion_analyses/R_covariates_mm_kidney.txt", 
             quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 # Writing out the covariate table including mm sum of transmembrane proteins, donors:
-write.table(D_covariates_mm_kidney, file = "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/D_covariates_mm_kidney.txt", 
+write.table(D_covariates_mm_kidney, file = "results/Mm_and_deletion_analyses/D_covariates_mm_kidney.txt", 
             quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 
@@ -100,7 +99,7 @@ Glm_kidney <- glm(Rejection ~ Mm_kidney + R_Gender + D_Gender + R_Age + D_Age + 
                          family = binomial(link = "logit"), data = R_covariates_mm_kidney)
 summary(Glm_kidney)
 write.table(tidy(Glm_kidney), 
-            "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/Glm_kidney",
+            "results/Mm_and_deletion_analyses/Glm_kidney",
             sep = "\t", quote = F, row.names = F)
 
 # Odds ratio and 95% CI for adjusted logistic regression model
@@ -111,11 +110,8 @@ Glm_kidney_only_sum <- glm(Rejection ~ Mm_kidney,
                              family = binomial(link = "logit"), data = R_covariates_mm_kidney)
 summary(Glm_kidney_only_sum)
 write.table(tidy(Glm_kidney_only_sum), 
-            "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/Glm_kidney_only_sum",
+            "results/Mm_and_deletion_analyses/Glm_kidney_only_sum",
             sep = "\t", quote = F, row.names = F)
-
-# Saving the R data
-save.image("~/Kidney_analyses/Kidney_genetics_analyses/src_for_mm_and_deletion_analyses/FINAL_GW_mm_KIDNEY.RData")
 
 ###############################################################################
 ### The survival analysis: the mismatch sum association to acute rejection event
@@ -125,7 +121,7 @@ cox_kidney <- coxph(Surv(Time_to_event_months, Rejection) ~ Mm_kidney + R_Age + 
                               Eplets_total_HLAI + Eplets_total_HLAII, data = R_covariates_mm_kidney)
 summary(cox_kidney)
 write.table(tidy(cox_kidney), 
-            "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/Cox_kidney",
+            "results/Mm_and_deletion_analyses/Cox_kidney",
             sep = "\t", quote = F, row.names = F)
 
 # Hazard ratio and CI 95% for adjusted data
