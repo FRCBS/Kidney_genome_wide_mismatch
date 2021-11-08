@@ -1,3 +1,4 @@
+#!/bin/env Rscript --no-save
 ###############################################################################
 # Mismatch analysis for (genomic collision) for all deletion-tagging SNPs
 # between recipient and donor
