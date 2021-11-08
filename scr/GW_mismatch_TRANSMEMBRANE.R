@@ -17,17 +17,17 @@ library(broom)
 ### CONTINUING WITH THE COVARIATE FILES FROM PREVIOUS MM ANALYSIS OF SECR AND TRANSM PROTEINS
 
 # Importing the phenotype files for both recipients and donors
-R_covariates_mm_secr_transm <- read_table2("~/Kidney_analyses/Results_new/Mm_and_deletion_analyses/R_covariates_mm_secr_transm.txt")
-D_covariates_mm_secr_transm <- read_table2("~/Kidney_analyses/Results_new/Mm_and_deletion_analyses/D_covariates_mm_secr_transm.txt")
+R_covariates <- read_table2("results/Mm_and_deletion_analyses/R_covariates_mm_secr_transm.txt")
+D_covariates <- read_table2("results/Mm_and_deletion_analyses/D_covariates_mm_secr_transm.txt")
 
 # Read dosage files containing imputed missense SNPs for transmembrane proteins
-KIDNEY_missense_transmembrane_dosage <- read_table2("~/Kidney_analyses/Results_new/KIDNEY_missense_transmembrane_dosage.raw")
+KIDNEY_missense_transmembrane_dosage <- read_table2("results/KIDNEY_missense_transmembrane_dosage.raw")
 
 # Join dosage files with phenotype files (both recipient and donor files)
-R_dos_pheno_transmembrane <- inner_join(R_covariates_mm_secr_transm, KIDNEY_missense_transmembrane_dosage, by = c("Family_ID" = "IID")) %>% 
+R_dos_pheno_transmembrane <- inner_join(R_covariates, KIDNEY_missense_transmembrane_dosage, by = c("Family_ID" = "IID")) %>% 
   select(-FID, -PAT, -MAT, -SEX, -PHENOTYPE)
 
-D_dos_pheno_transmembrane <- inner_join(D_covariates_mm_secr_transm, KIDNEY_missense_transmembrane_dosage, by = c("Family_ID" = "IID")) %>% 
+D_dos_pheno_transmembrane <- inner_join(D_covariates, KIDNEY_missense_transmembrane_dosage, by = c("Family_ID" = "IID")) %>% 
   select(-FID, -PAT, -MAT, -SEX, -PHENOTYPE)
 
 # Remove extra columns (leave only 'pair' and dosage-columns)
@@ -76,17 +76,17 @@ Mm_transm_result_df <- data.frame(Pair=R_paired_dosage_transmembrane$Pair, Mm_tr
 
 
 # Match phenotype files with adjusted R/D mismatches, recipients:
-R_covariates_mm_transmembrane <- inner_join(R_covariates_mm_secr_transm, Mm_transm_result_df, by = "Pair")
+R_covariates_mm_transmembrane <- inner_join(R_covariates, Mm_transm_result_df, by = "Pair")
 
 # Also, the same for donors:
-D_covariates_mm_transmembrane <- inner_join(D_covariates_mm_secr_transm, Mm_transm_result_df, by = "Pair")
+D_covariates_mm_transmembrane <- inner_join(D_covariates, Mm_transm_result_df, by = "Pair")
 
 # Writing out the covariate table including mm sum of transmembrane proteins, recipients:
-write.table(R_covariates_mm_transmembrane, file = "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/R_covariates_mm_transmembrane.txt", 
+write.table(R_covariates_mm_transmembrane, file = "results/Mm_and_deletion_analyses/R_covariates_mm_transmembrane.txt", 
             quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 # Writing out the covariate table including mm sum of transmembrane proteins, donors:
-write.table(D_covariates_mm_transmembrane, file = "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/D_covariates_mm_transmembrane.txt", 
+write.table(D_covariates_mm_transmembrane, file = "results/Mm_and_deletion_analyses/D_covariates_mm_transmembrane.txt", 
             quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 
@@ -100,7 +100,7 @@ Glm_transmembrane <- glm(Rejection ~ Mm_transmembrane + R_Gender + D_Gender + R_
                          family = binomial(link = "logit"), data = R_covariates_mm_transmembrane)
 summary(Glm_transmembrane)
 write.table(tidy(Glm_transmembrane), 
-            "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/Glm_transmembrane",
+            "results/Mm_and_deletion_analyses/Glm_transmembrane",
             sep = "\t", quote = F, row.names = F)
 
 # Odds ratio and 95% CI for adjusted logistic regression model
@@ -111,11 +111,8 @@ Glm_transmembrane_only_sum <- glm(Rejection ~ Mm_transmembrane,
                              family = binomial(link = "logit"), data = R_covariates_mm_transmembrane)
 summary(Glm_transmembrane_only_sum)
 write.table(tidy(Glm_transmembrane_only_sum), 
-            "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/testi",
+            "results/Mm_and_deletion_analyses/testi",
             sep = "\t", quote = F, row.names = F)
-
-# Saving the R data
-save.image("~/Kidney_analyses/Kidney_genetics_analyses/src_for_mm_and_deletion_analyses/FINAL_GW_mm_TRANSMEMBRANE.RData")
 
 ###############################################################################
 ### The survival analysis: the mismatch sum association to acute rejection event
@@ -127,7 +124,7 @@ cox_transmembrane <- coxph(Surv(Time_to_event_months, Rejection) ~ Mm_transmembr
 
 summary(cox_transmembrane)
 write.table(tidy(cox_transmembrane), 
-            "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/Cox_transmembrane",
+            "results/Mm_and_deletion_analyses/Cox_transmembrane",
             sep = "\t", quote = F, row.names = F)
 
 # Hazard ratio and CI 95% for adjusted data
