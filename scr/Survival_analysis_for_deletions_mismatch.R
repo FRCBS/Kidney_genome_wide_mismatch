@@ -1,5 +1,4 @@
 ###############################################################################
-# 210429
 # Mismatch analysis for (genomic collision) for all deletion-tagging SNPs
 # between recipient and donor
 
@@ -15,13 +14,13 @@ library(janitor)
 ###############################################################################
 
 # Importing the covariate files for both recipients and donors
-R_dos_pheno_dels <- read_table2("~/Kidney_analyses/Results_new/Mm_and_deletion_analyses/R_covariates_deletions_0_1.txt")
-D_dos_pheno_dels <- read_table2("~/Kidney_analyses/Results_new/Mm_and_deletion_analyses/D_covariates_deletions_0_1.txt")
+R_covariates <- read_table2("~/Kidney_analyses/Results_new/Mm_and_deletion_analyses/R_covariates_deletions_0_1.txt")
+D_covariates <- read_table2("~/Kidney_analyses/Results_new/Mm_and_deletion_analyses/D_covariates_deletions_0_1.txt")
 
 # Remove extra columns from both covariate files (so that we only have the 'pairs' column and the deletion-columns with either 
 # value 1 or 0)
-R_dos_pheno_dels_collision <- select(R_dos_pheno_dels, "Pair", 167:206)
-D_dos_pheno_dels_collision <- select(D_dos_pheno_dels, "Pair", 167:206)
+R_dos_pheno_dels_collision <- select(R_covariates, "Pair", 167:206)
+D_dos_pheno_dels_collision <- select(D_covariates, "Pair", 167:206)
 
 # Now I have dosage files for both recipients and donors with:
 # 0 = heterozygous/homozygous for non-risk allele
@@ -94,16 +93,16 @@ Collision_df <- rename(Collision_df, rs3810336_col = X39)
 Collision_df <- rename(Collision_df, rs4806152_col = X40)
 
 # Match covariate files with genomic collision result (both recipient and donor)
-R_dos_pheno_dels_collision <- inner_join(R_dos_pheno_dels, Collision_df, by = "Pair")
-D_dos_pheno_dels_collision <- inner_join(D_dos_pheno_dels, Collision_df, by = "Pair")
+R_dos_pheno_dels_collision <- inner_join(R_covariates, Collision_df, by = "Pair")
+D_dos_pheno_dels_collision <- inner_join(D_covariates, Collision_df, by = "Pair")
 
 # Write out the tables
 write.table(R_dos_pheno_dels_collision, 
-            file = "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/R_covariates_deletions_collision.txt", 
+            file = "results/Mm_and_deletion_analyses/R_covariates_deletions_collision.txt", 
             quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 write.table(D_dos_pheno_dels_collision, 
-            file = "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/D_covariates_deletions_collision.txt", 
+            file = "results/Mm_and_deletion_analyses/D_covariates_deletions_collision.txt", 
             quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 ###############################################################################
