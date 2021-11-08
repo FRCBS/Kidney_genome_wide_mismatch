@@ -1,3 +1,4 @@
+#!/bin/env Rscript --no-save
 ###############################################################################
 # Surival analysis for all deletion-tagging SNP:s
 # for RECIPIENT-ONLY data of 1025 individuals
