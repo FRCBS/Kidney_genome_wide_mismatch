@@ -1,6 +1,5 @@
 #!/bin/env Rscript --no-save
 ###############################################################################
-# 210525
 # Deletion sum between donor and recipient
 # (genomic collision)
 
@@ -10,8 +9,8 @@
 ###############################################################################
 
 # Importing the covariate files 
-R_dos_pheno_dels_collision <- read_table2("~/Kidney_analyses/Results_new/Mm_and_deletion_analyses/R_covariates_deletions_collision.txt")
-D_dos_pheno_dels_collision <- read_table2("~/Kidney_analyses/Results_new/Mm_and_deletion_analyses/D_covariates_deletions_collision.txt")
+R_dos_pheno_dels_collision <- read_table2("results/Mm_and_deletion_analyses/R_covariates_deletions_collision.txt")
+D_dos_pheno_dels_collision <- read_table2("results/Mm_and_deletion_analyses/D_covariates_deletions_collision.txt")
 
 # The collision value for mismatch is 1, other cases are 0
 # recipient 0 + donor 0 = 0
@@ -25,11 +24,11 @@ D_dos_pheno_dels_collision$Del_sum_collision <- c(Del_sum_collision = rowSums(D_
 
 # Write out the tables
 write.table(R_dos_pheno_dels_collision, 
-            file = "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/R_covariates_deletions_sum_collision.txt", 
+            file = "results/Mm_and_deletion_analyses/R_covariates_deletions_sum_collision.txt", 
             quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 write.table(D_dos_pheno_dels_collision, 
-            file = "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/D_covariates_deletions_sum_collision.txt", 
+            file = "results/Mm_and_deletion_analyses/D_covariates_deletions_sum_collision.txt", 
             quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 ###############################################################################
@@ -48,7 +47,7 @@ glm_delsumcol_adjusted <- glm(Rejection ~ Del_sum_collision + R_Gender + D_Gende
 summary(glm_delsumcol_adjusted)
 
 write.table(tidy(glm_delsumcol_adjusted), 
-            "/home/markkinens/Kidney_analyses/Results_new/Mm_and_deletion_analyses/glm_delsumcol_adjusted",
+            "results/Mm_and_deletion_analyses/glm_delsumcol_adjusted",
             sep = "\t", quote = F, row.names = F)
 
 # OR and 95% CI
