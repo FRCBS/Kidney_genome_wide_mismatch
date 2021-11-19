@@ -23,9 +23,10 @@ D_covariates <- read_table2("~/Kidney_analyses/Results_new/Mm_and_deletion_analy
 R_dos_pheno_dels_collision <- select(R_covariates, "Pair", 167:206)
 D_dos_pheno_dels_collision <- select(D_covariates, "Pair", 167:206)
 
-# Now I have dosage files for both recipients and donors with:
+# The files for both recipients and donors are coded accordingly:
 # 0 = heterozygous/homozygous for non-risk allele
 # 1 = homozygous for risk-allele
+
 # The next thing to do is to compare the patient and donor genotype
 # I want mismatch when patient is 1 (homozygous for risk-allele) and donor is 0 (either 
 # heterozygous or homozygous for the non-risk allele)
@@ -93,7 +94,7 @@ Collision_df <- rename(Collision_df, rs324121_col = X38)
 Collision_df <- rename(Collision_df, rs3810336_col = X39)
 Collision_df <- rename(Collision_df, rs4806152_col = X40)
 
-# Match covariate files with genomic collision result (both recipient and donor)
+# Match covariate files with genomic collision result (for both recipient and donor)
 R_dos_pheno_dels_collision <- inner_join(R_covariates, Collision_df, by = "Pair")
 D_dos_pheno_dels_collision <- inner_join(D_covariates, Collision_df, by = "Pair")
 
