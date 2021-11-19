@@ -4,7 +4,7 @@
 # between recipient and donor
 
 # CONTINUING WITH THE COVARIATE FILES FROM PREVIOUS script for
-# survival analysis of all deletions in recipient-only data 
+# Create covariate file for all deletions before genomic collision
 ###############################################################################
 
 library(tidyverse)
