@@ -1,0 +1,34 @@
+###############################################################################
+# Outline for deletion analysis
+###############################################################################
+
+## 1
+# Performing the survival analysis for 40 deletion-tagging variants for 
+# recipients only according to the script:
+# "Survival_analysis_for_deletions_recipients_only.R"
+# Here the coding for the deletion-tagging variants is:
+# 1 = homozygous for major allele or heterozygous
+# 2 = homozygous for minor allele
+
+## 2
+# Creating the files for deletion mismatch analysis according to the script:
+# "Create_covariate_files_for_all_deletions_before_genomic_collision.R"
+# Here the previous coding for deletion-tagging variants are recoded accordingly:
+# 0 = homozygous for major allele or heterozygous
+# 1 = homozygous for minor allele
+
+## 3
+# Performing the survival analysis for deletion mismatch for 40 deletion-tagging variants
+# between donor and recipient ("genomic collision") according to the script:
+# "Survival_analysis_for_deletions_mismatch.R"
+# Here, the mismatch (value 1) comes when patient is 1 (homozygous for minor allele) and donor is 0 
+# (heterozygous or homozygous for major allele)
+
+## 4
+# Calculating the sum of all deletions among recipient data according to the script:
+# "All_deletions_sum_recipients.R"
+
+## 5
+# Calculating the sum of deletion mismatches between donor and recipient
+# according to the script:
+# "All_deletions_sum_mismatch.R"
