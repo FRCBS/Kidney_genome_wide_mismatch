@@ -12,6 +12,13 @@
 R_dos_pheno_dels_collision <- read_table2("results/Mm_and_deletion_analyses/R_covariates_deletions_collision.txt")
 D_dos_pheno_dels_collision <- read_table2("results/Mm_and_deletion_analyses/D_covariates_deletions_collision.txt")
 
+# Dosage files for both recipients and donors with:
+# 0 = heterozygous/homozygous for non-risk allele
+# 1 = homozygous for risk-allele
+# The next thing to do is to compare the patient and donor genotype
+# I want mismatch when patient is 1 (homozygous for risk-allele) and donor is 0 (either 
+# heterozygous or homozygous for the non-risk allele)
+
 # The collision value for mismatch is 1, other cases are 0
 # recipient 0 + donor 0 = 0
 # recipient 0 + donor 1 = 0
