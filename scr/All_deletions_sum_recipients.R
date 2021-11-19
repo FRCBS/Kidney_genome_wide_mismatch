@@ -3,7 +3,7 @@
 # Deletion sum for patients and donors
 
 # CONTINUING WITH THE COVARIATE FILES FROM PREVIOUS script in which we created the files
-# for genomic collision and deletion sum analysis
+# for genomic collision
 ###############################################################################
 # Calculating the sum of deletions 
 
