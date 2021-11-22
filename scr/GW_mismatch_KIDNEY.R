@@ -143,7 +143,7 @@ R_covariates_mm_kidney <- within(R_covariates_mm_kidney, quartile <- as.integer(
 # The number of pairs per each quartile
 survdiff(Surv(Time_to_event_months, Rejection) ~ quartile, data = R_covariates_mm_kidney)
 
-# Kapplan-Meier survival analysis of quartiles of mismatches in transmembrane and secretory proteins
+# Kapplan-Meier survival analysis of quartiles of mismatches in kidney-related proteins
 ggsurvplot(
   fit = survfit(Surv(Time_to_event_months, Rejection) ~ quartile, data = R_covariates_mm_kidney), 
   xlab = "Months", 
