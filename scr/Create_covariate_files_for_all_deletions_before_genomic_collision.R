@@ -62,7 +62,7 @@ R_dos_pheno_dels$rs324121_0_1 <- recode(R_dos_pheno_dels$rs324121, '1' = 0)
 R_dos_pheno_dels$rs3810336_0_1 <- recode(R_dos_pheno_dels$rs3810336, '1' = 0)
 R_dos_pheno_dels$rs4806152_0_1 <- recode(R_dos_pheno_dels$rs4806152, '1' = 0)
 
-# Recode 2 (heterozygous) into value 1,
+# Recode 2 (homozygous for minor allele) into value 1,
 # after which the values are 0 = no deletion, 1 = deletion
 R_dos_pheno_dels$rs6943474_0_1 <- recode(R_dos_pheno_dels$rs6943474_0_1, '2' = 1)
 R_dos_pheno_dels$rs4882017_0_1 <- recode(R_dos_pheno_dels$rs4882017_0_1, '2' = 1)
@@ -155,7 +155,7 @@ D_dos_pheno_dels$rs324121_0_1 <- recode(D_dos_pheno_dels$rs324121, '1' = 0)
 D_dos_pheno_dels$rs3810336_0_1 <- recode(D_dos_pheno_dels$rs3810336, '1' = 0)
 D_dos_pheno_dels$rs4806152_0_1 <- recode(D_dos_pheno_dels$rs4806152, '1' = 0)
 
-# Recode 2 (heterozygous) into value 1,
+# Recode 2 (homozygous for minor allele) into value 1,
 # after which the values are 0 = no deletion, 1 = deletion
 D_dos_pheno_dels$rs6943474_0_1 <- recode(D_dos_pheno_dels$rs6943474_0_1, '2' = 1)
 D_dos_pheno_dels$rs4882017_0_1 <- recode(D_dos_pheno_dels$rs4882017_0_1, '2' = 1)
