@@ -1,0 +1,266 @@
+###############################################################################
+# Replication cohort analyses
+# for R/D mismatch sum of kidney-related proteins and CFHR1 deletion 
+# tagging-variant
+###############################################################################
+# Recipient and donor mismatch analyses for
+# imputed missense variants for kidney-related proteins
+
+# R packages
+library(data.table)
+library(tidyverse)
+library(magrittr)
+library(Amelia)
+library(broom)
+library(dplyr)
+library(survival)
+library(ggplot2)
+library(survminer)
+library(janitor)
+library(gtsummary)
+
+###
+### Import the covariate files for both recipients and donors including 
+# covariates: rejection status (rejection/no rejection), recipient gender, 
+# donor gender, recipient sex, donor sex, cold ischemia time, PRA I, PRA II, 
+# follow-up time in months, HLA I and HLA II eplet mismatch
+# The covariate files also contain a variable "Pair" according to which the R/D pairs 
+# are later identified, and sample ID ("Family_ID")
+Recipients <- read_table2("results/Recipients.txt")
+Donors <- read_table2("results/Donors.txt")
+
+# Import dosage file containing imputed missense variants for kidney-related proteins
+Kidney_dosage <- read_table2("results/Kidney_dosage.raw")
+
+# Join dosage files with covariate files (for both recipient and donor)
+Kidney_recipients <- inner_join(Recipients, Kidney_dosage , by = c("Family_ID" = "IID")) %>% 
+  select(-FID, -PAT, -MAT, -SEX, -PHENOTYPE)
+Kidney_donors <- inner_join(Donors, Kidney_dosage , by = c("Family_ID" = "IID")) %>% 
+  select(-FID, -PAT, -MAT, -SEX, -PHENOTYPE)
+
+# After joining the dosage files with covariate files, remove the extra columns leaving
+# only "Pair"- (=according to which the R/D pairs are identified) and dosage-columns
+R_dosage_kidney <- select(Kidney_recipients, -covariate1, -covariate2, -covariate3..)
+D_dosage_kidney <- select(Kidney_donors, -covariate1, -covariate2, -covariate3..)
+
+# Identify R/D pairs
+R_D_Pairs <- inner_join(R_dosage_kidney, D_dosage_kidney, by = "Pair") %>% select(Pair)
+
+# Select paired data (for both recipient and donor)
+R_paired <- inner_join(R_D_Pairs, R_dosage_kidney, by = "Pair")
+missmap (R_paired)
+D_paired <- inner_join(R_D_Pairs, D_dosage_kidney, by = "Pair")
+missmap (D_paired)
+
+# Calculate the mismatch sum
+# The function to calculate the sum is:
+Mismatch <- function(R,D) {
+  ifelse((D>0 & R==0) | (D<2 & R==2), T, F) 
+}
+
+# Calculate the mismatch sum for kidney-related proteins
+# between recipient and donor with the created function
+Mm_kidney <- sapply(2:ncol(R_paired), 
+             function(i) {Mismatch(R_paired[,i], D_paired[,i])})
+
+# Creating a dataframe from R/D mismatch result
+Mm_kidney_df <- data.frame(Pair=R_paired$Pair, Mm_kidney=rowSums(Mm_kidney))
+
+# Join covariate files with R/D mismatch result (for both recipient and donor)
+Recipients_mm <- inner_join(Recipients, Mm_kidney_df, by = "Pair")
+Donors_mm <- inner_join(Donors, Mm_kidney_df, by = "Pair")
+
+###
+### The cox proportional hazards model for the association of kidney mm sum 
+# to acute rejection
+
+# Cox proportional hazards model for adjusted data
+Cox_kidney <- coxph(Surv(Time_to_event_months, Rejection_status) ~ Mm_kidney + R_Age + 
+			D_Age + R_Gender + D_Gender + Cold_ischemia + PRAI + PRAII +
+                              HLAI_eplet + HLAII_eplet, data = Recipients_mm)
+summary(Cox_kidney)
+
+# HR and 95% CI for adjusted data
+coxph(Surv(Time_to_event_months, Rejection_status) ~ Mm_kidney + R_Age + D_Age + 
+	R_Gender + D_Gender + Cold_ischemia + PRAI + PRAII +
+        HLAI_eplet + HLAII_eplet, data = Recipients_mm) %>% 
+  gtsummary::tbl_regression(exp = TRUE) 
+
+###
+## Analyzing the quartiles of the mismatch sum of kidney-related proteins
+
+# Divide the mm sum into quartiles (1 = the lowest quartile, 2 = the second, 
+# 3 = the third, 4 = the highest quartile)
+Recipients_mm <- within(Recipients_mm, quartile 
+			<- as.integer(cut(Mm_kidney, 
+                           quantile(Mm_kidney, probs = 0:4/4), include.lowest = TRUE)))
+
+# The Kapplan-Meier survival analysis of quartiles of mm sum in kidney-related 
+# proteins
+ggsurvplot(
+  fit = survfit(Surv(Time_to_event_months, Rejection_status) ~ quartile, data = Recipients_mm), 
+  xlab = "Time to event (months)", 
+  ylab = "Rejection-free survival")
+
+# Cox proportional hazards model for unadjusted data
+coxph(Surv(Time_to_event_months, Rejection_status) ~ quartile, data = Recipients_mm)
+
+# Cox proportional hazards model for adjusted data
+coxph(Surv(Time_to_event_months, Rejection_status) ~ quartile + R_Age + D_Age + 
+	R_Gender + D_Gender + Cold_ischemia + PRAI + PRAII +
+		HLAI_eplet + HLAII_eplet, data = Recipients_mm)
+
+# HR and 95% CI for unadjusted data
+coxph(Surv(Time_to_event_months, Rejection_status) ~ quartile, data = Recipients_mm) %>% 
+  gtsummary::tbl_regression(exp = TRUE)
+
+# HR and 95% CI for adjusted data
+coxph(Surv(Time_to_event_months, Rejection_status) ~ quartile + R_Age + D_Age + 
+	R_Gender + D_Gender + Cold_ischemia + PRAI + PRAII +
+        HLAI_eplet + HLAII_eplet, data = Recipients_mm) %>% 
+  gtsummary::tbl_regression(exp = TRUE)
+
+###############################################################################
+# Surival analysis for CFHR1 deletion-tagging variant rs7542235 for recipients 
+# Continuing with the same covariate 'Recipients' file from previous analysis
+
+# Import dosage file containing the CFHR1 deletion-tagging variant rs7542235
+Kidney_del_dosage <- read_table2("results/Kidney_del_dosage.raw")
+
+# Join dosage file with covariate file for recipients
+Recipients_del <- inner_join(Recipients, Kidney_del_dosage, 
+	by = c("Family_ID" = "IID")) %>% 
+  	select(-FID, -PAT, -MAT, -SEX, -PHENOTYPE)
+
+# Recoding the variants accordingly
+# 1 = homozygous for major allele or heterozygous (nonrisk genotype)
+# 2 = homozygous for minor allele (risk genotype)
+
+# In the dosage file, the homozygosity/heterozygosity is coded accordingly 
+# 0 = homozygous for major allele 
+# 1 = heterozygous 
+# 2 = homozygous for minor allele
+# So, recoding 0 (homozygous for major allele) into value 1
+# (the other values remain the same (1=1 and 2=2))
+Recipients_del$rs7542235 <- recode(Recipients_del$rs7542235, '0' = 1)
+
+###
+## Analyzing the association of risk vs. nonrisk genotype to acute rejection
+# with Kapplan-Meier 
+
+ggsurvplot(
+  fit = survfit(Surv(Time_to_event_months, Rejection_status) ~ rs7542235, 
+  data = Recipients_del), 
+  xlab = "Time to event (months)", 
+  ylab = "Rejection-free survival")
+
+# HR and 95% CI for unadjusted data
+coxph(Surv(Time_to_event_months, Rejection_status) ~ rs7542235, data = Recipients_del) %>% 
+  gtsummary::tbl_regression(exp = TRUE)
+
+# HR and 95% CI for adjusted data
+coxph(Surv(Time_to_event_months, Rejection_status) ~ rs7542235 + R_Age + D_Age + 
+	R_Gender + D_Gender + Cold_ischemia +
+        HLAI_eplet + HLAII_eplet, data = Recipients_del) %>% 
+  gtsummary::tbl_regression(exp = TRUE)
+
+### 
+# Also, creating exactly the same covariate file for donors for R/D analysis 
+# (collision model)
+
+# Join dosage file with covariate file for donors
+Donors_del <- inner_join(Donors, Kidney_del_dosage, 
+	by = c("Family_ID" = "IID")) %>% 
+  	select(-FID, -PAT, -MAT, -SEX, -PHENOTYPE)
+
+# Recoding the rs7542235 variant 
+Donors_del$rs7542235 <- recode(Donors_del$rs7542235, '0' = 1)
+
+###############################################################################
+# Create files for both recipients and donors in which 
+# the value 1 for variant stands for 'deletion' and value 0 
+# stands for 'no deletion'
+# After creating the files, we can calculate the genomic collision between 
+# recipient and donor
+# Continuing with the same covariate files 'Recipients_del' and 'Donors_del'
+# from previous analysis
+
+# Recoding the variant accordingly
+# 0 = homozygous for major allele or heterozygous (no deletion)
+# 1 = homozygous for minor allele (deletion)
+
+# Recode 1 (heterozygous/homozygous for major allele) into value 0,
+# the other value 2 (homozygous for minor allele) remain the same
+Recipients_del$rs7542235_0_1 <- recode(Recipients_del$rs7542235, '1' = 0)
+Donors_del$rs7542235_0_1 <- recode(Donors_del$rs7542235, '1' = 0)
+
+# Recode 2 (heterozygous) into value 1,
+# after which the values are 0 = no deletion, 1 = deletion
+Recipients_del$rs7542235_0_1 <- recode(Recipients_del$rs7542235_0_1, '2' = 1)
+Donors_del$rs7542235_0_1 <- recode(Donors_del$rs7542235_0_1, '2' = 1)
+
+###############################################################################
+# Mismatch analysis for (genomic collision) for the deletion-tagging variant
+# rs7542235 between recipient and donor
+# Continuing with the covariate files 'Recipients_del' and 'Donors_del'
+# The files for both recipients and donors are now coded accordingly
+# 0 = heterozygous/homozygous for major allele (no deletion)
+# 1 = homozygous for minor allele (deletion)
+
+# Remove extra columns from both covariate files (so that we only have the 'pairs' 
+# column and the deletion-tagging variant dosage-column with either value 1 or 0)
+Recipients_collision <- select(Recipients_del, "Pair", "rs7542235_0_1")
+Donors_collision <- select(Donors_del, "Pair", "rs7542235_0_1")
+
+# Next calculating the mismatch between donor and recipient
+# Mismatch occurs when recipient is 1 (homozygous for risk-allele) and donor is 0 (either 
+# heterozygous or homozygous for the non-risk allele)
+
+# Identify R/D pairs
+Collision_pairs <- inner_join(Recipients_collision, Donors_collision, by = "Pair") %>% select(Pair)
+
+# Select paired data (for both recipient and donor)
+R_paired_collision <- inner_join(Collision_pairs, Recipients_collision, by = "Pair")
+missmap(R_paired_collision)
+D_paired_collision <- inner_join(Collision_pairs, Donors_collision, by = "Pair")
+missmap(D_paired_collision)
+
+# Calculate the mismatch sum
+# The function to calculate the sum is:
+Mismatch_col <- function(R,D) {
+  ifelse((D==0 & R==1), 1, 0) 
+}
+
+# Calculate the mismatch sum for deletion between R/D
+Collision <- sapply(2:ncol(R_paired_collision), 
+             function(i) {Mismatch_col(R_paired_collision[,i], D_paired_collision[,i])})
+
+# Creating a dataframe from R/D mismatch result
+Collision_df <- data.frame(Pair=R_paired_collision$Pair, Collision)
+
+# Rename the column in the dataframe
+Collision_df <- rename(Collision_df, rs7542235_col = Collision)
+
+# Join covariate files with genomic collision result (for both recipient and donor)
+Recipients_del_collision <- inner_join(Recipients_del, Collision_df, by = "Pair")
+Donors_del_collision <- inner_join(Donors_del, Collision_df, by = "Pair")
+
+###
+## Analyzing the association of mismatch vs. nonmismatch to acute rejection
+# with Kapplan-Meier 
+
+ggsurvplot(
+  fit = survfit(Surv(Time_to_event_months, Rejection_status) ~ rs7542235_col, 
+  data = Recipients_del_collision), 
+  xlab = "Time to event (months)", 
+  ylab = "Rejection-free survival")
+
+# HR and 95% CI for unadjusted data
+coxph(Surv(Time_to_event_months, Rejection_status) ~ rs7542235_col, data = Recipients_del_collision) %>% 
+  gtsummary::tbl_regression(exp = TRUE)
+
+# HR and 95% CI for adjusted data
+coxph(Surv(Time_to_event_months, Rejection_status) ~ rs7542235_col + R_Age + D_Age + 
+	R_Gender + D_Gender + Cold_ischemia +
+        HLAI_eplet + HLAII_eplet, data = Recipients_del_collision) %>% 
+  gtsummary::tbl_regression(exp = TRUE)
