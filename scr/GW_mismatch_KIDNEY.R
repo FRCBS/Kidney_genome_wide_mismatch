@@ -163,6 +163,34 @@ coxph(Surv(Time_to_event_months, Rejection) ~ quartile + R_Age + D_Age + R_Gende
                                 Eplets_total_HLAI + Eplets_total_HLAII, data = R_covariates_mm_kidney)
 
 ###############################################################################
+# Analysing the upper and lower quartiles of the mismatch in kidney-related 
+# proteins
+
+# Copying the covariate file
+kidney_quartiles <- R_covariates_mm_kidney
+
+# Deleting the rows where column 'quartile_kidney' is 2 and 3
+
+# First deleting all values '2'
+kidney_quartiles_edited <- kidney_quartiles[-which(kidney_quartiles$quartile == 2),]
+
+# Then deleting the values '3'
+kidney_quartiles_edited <- kidney_quartiles_edited[-which(kidney_quartiles_edited$quartile == 3),]
+
+# As a result: a dataframe that has only quartiles 1 and 4
+
+# Performing the survival analysis
+# Kapplan-Meier survival analysis of quartiles of mismatches in transmembrane and secretory proteins
+ggsurvplot(
+  fit = survfit(Surv(Time_to_event_months, Rejection) ~ quartile, data = kidney_quartiles_edited), 
+  xlab = "Months", 
+  ylab = "Overall survival probability")
+
+# HR and CI 95% for adjusted data
+coxph(Surv(Time_to_event_months, Rejection) ~ quartile, data = kidney_quartiles_edited) %>% 
+  gtsummary::tbl_regression(exp = TRUE) 
+
+###############################################################################
 # Redoing the Kapplan-Meier plots for manuscript
 
 # Kapplan-Meier plot with risk table
