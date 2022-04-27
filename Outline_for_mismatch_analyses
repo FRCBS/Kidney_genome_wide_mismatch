@@ -13,7 +13,7 @@ git clone https://github.com/Ensembl/ensembl-vep.git
 # unpack the archive
 tar xvfz DBI-1.15.tar.gz
 
-# ganerate "makefile"
+# generate "makefile"
 cd DBI-1.15
 perl Makefile.PL
 
