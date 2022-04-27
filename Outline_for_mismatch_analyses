@@ -90,7 +90,7 @@ plink \
 # Ambiguous sex IDs written to KIDNEY_missense_variants.nosex .
 # Error: No variants remaining after --extract.
 
-### Variant extraction (above) wasn't successful (see the error in the output!, 
+### Variant extraction (above) wasn't successful (see the error in the output!), 
 # so first editing the variant list according to
 # /src/Remove_duplicates_and_extract_variants.R
 
