@@ -1,0 +1,245 @@
+###############################################################################
+### Ensembl Variant Effect Predictor (VEP)
+###############################################################################
+### Instructions: 
+# https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html
+# Download VEP
+git clone https://github.com/Ensembl/ensembl-vep.git
+
+### BEFORE CONTINUING, INSTALL DBI AND DBD:
+
+### Install DBI
+# download from: https://www.cpan.org/modules/by-module/DBI/
+# unpack the archive
+tar xvfz DBI-1.15.tar.gz
+
+# ganerate "makefile"
+cd DBI-1.15
+perl Makefile.PL
+
+# make the installable files
+make
+
+# test the new files
+make test
+
+# install the modules and the DBI program into the configured Perl library and binary directories
+make install
+
+### Install DBD
+sudo apt-get install libdbd-mysql-perl
+
+### Install VEP
+cd ensembl-vep
+perl INSTALL.pl
+
+###############################################################################
+### Testing VEP
+
+# Generating variant list from my data (KIDNEY_b38_FINAL_DATA.bim) according to R script in 
+# /src/Create_variant_list.R (step 1 in the script)
+
+# Create a variant list with VEP containing all variants according to my data 'variants.txt'
+./vep -i /data/variants.txt -o /data/all_variants_FINAL.txt --cache
+
+# Filter variants according to 'missense_variant'
+./filter_vep -i /data/all_variants_FINAL.txt -o /data/missense_variants.txt -filter "Consequence is missense_variant"
+
+# Didn't create a list from X chr variants (because of chr being '23' instead of 'X')
+
+# Generating a variant list of chrX variants according to R script in
+# /src/Create_variant_list.R (step 2 in the script)
+
+# Create a variant list with VEP containing X chr variants according to my data 'X_variants.txt'
+./vep -i /data/X_variants.txt -o /data/X_variants_FINAL.txt --cache
+
+# Filter X variants according to 'missense_variant'
+./filter_vep -i /data/X_variants_FINAL.txt -o /data/X_missense_variants.txt -filter "Consequence is missense_variant"
+
+# Merging two missense-lists (created above; chr 1-22 and X variants)
+
+# First editing the other list (removing texts from the beginning of the file)
+# edited list: 'X_missense_variants_cleaned.txt'
+
+# Merge
+cat missense_variants.txt X_missense_variants_cleaned.txt > ALL_MISSENSE_VARIANTS.txt
+
+# Editing the datafile created above 'ALL_MISSENSE_VARIANTS_cleaned.txt' 
+# Creating a list of missense variants only containing the position according to 
+# /src/Create_variant_list.R (step 3 in the script)
+
+# Extract
+plink \
+	--bfile KIDNEY_b38_no_relatives_FINAL \
+	--extract missense_pos_FINAL.txt \
+	--make-bed \
+	--out KIDNEY_missense_variants
+
+# PLINK v1.90b6.16 64-bit (17 Feb 2020)          www.cog-genomics.org/plink/1.9/
+# (C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+# Logging to KIDNEY_missense_variants.log.
+# Options in effect:
+#   --bfile KIDNEY_b38_no_relatives_FINAL
+#   --extract missense_pos_FINAL.txt
+#   --make-bed
+#   --out KIDNEY_missense_variants
+
+# 31992 MB RAM detected; reserving 15996 MB for main workspace.
+# 9085413 variants loaded from .bim file.
+# 1794 people (0 males, 0 females, 1794 ambiguous) loaded from .fam.
+# Ambiguous sex IDs written to KIDNEY_missense_variants.nosex .
+# Error: No variants remaining after --extract.
+
+### Variant extraction (above) wasn't successful (see the error in the output!, 
+# so first editing the variant list according to
+# /src/Remove_duplicates_and_extract_variants.R
+
+# Then extracting the missense variants from dataset
+plink \
+	--bfile KIDNEY_b38_no_relatives_FINAL \
+	--extract missense_bim.txt \
+	--make-bed \
+	--out KIDNEY_missense_variants
+
+# Create dosage file
+plink \
+	--bfile KIDNEY_missense_variants \
+	--recodeA \
+	--out KIDNEY_missense_dosage
+
+# SUCCESSFUL!
+
+###############################################################################
+# Performing mismatch analyses according to Reindl-Schwaighofer's article
+# Chromosome X and MHC region excluded
+# First, only missense secretory and transmembrane variants included
+# and then analyses performed also for transmembrane, kidney and genome-wide
+# missense variants
+# The MHC region for genome build 38 can be found in: 
+# https://www.ncbi.nlm.nih.gov/grc/human/regions/MHC?asm=GRCh38.p13
+###############################################################################
+# Transmembrane and secretory proteins
+
+# Go to uniport.org
+# Using query string: 
+# annotation:(type:transmem) OR locations:(location:"Secreted [SL-0243]") OR 
+# keyword:"Transmembrane [KW-0812]" AND reviewed:yes AND organism:"Homo sapiens (Human) [9606]"
+
+# Dowloading 7007 reviewed transcripts: /data/uniprot-annotation (type transmem)+OR+locations (location Secre--.tab
+# Copy and paste the text file to excel and divide each ENST-id to separate columns
+# You can find the excel in /data/Transmembrane_secretory_separated.xlsx
+
+# Iporting the excel to R and continuing with /src/Transmemb_secr_proteins.R
+
+# Exclude the MHC and use only chromosomes 1-22
+plink \
+	--bfile KIDNEY_b38_no_relatives_FINAL \
+	--chr 1-22 \
+	--exclude /data/MHC_region.txt \
+	--range \
+	--make-bed \
+	--out KIDNEY_chr1_22_without_MHC
+
+# Extracting the missense secretory and transmembrane variants from dataset 
+plink \
+	--bfile KIDNEY_chr1_22_without_MHC \
+	--extract List_of_secr_variants_FINAL \
+	--make-bed \
+	--out KIDNEY_missense_secr_chr1_22_without_MHC
+
+# Create dosage file
+plink \
+	--bfile KIDNEY_missense_secr_chr1_22_without_MHC \
+	--recodeA \
+	--out KIDNEY_missense_transmemb_secr_dosage
+
+# Continue according to: 
+# /src/GW_mismatch_TRANSMEMBRANE_SECR.R
+
+###############################################################################
+# Transmembrane proteins only
+
+# Go to uniprot.org
+# using query string:
+# annotation:(type:transmem) OR keyword:"Transmembrane [KW-0812]" 
+# AND reviewed:yes AND organism:"Homo sapiens (Human) [9606]"
+# Dowloading 5198 reviewed transcripts with extra column "annotation: Ensembl" 
+# and download in tab-separated format
+# You can find the file in: 
+# /data/uniprot-(annotation (type transmem)+OR+keyword Transmembrane+[K--.tab
+
+# Import the list in R and edit according to: 
+# /src/Create_transmem_list.R
+
+# You can find the excel in /data/Transmembrane_separated.xlsx
+
+# 201029
+# Extracting the transmembrane variants from dataset 
+# (excluding MHC region and including only chromosomes 1-22)
+plink \
+	--bfile KIDNEY_chr1_22_without_MHC \
+	--extract List_of_transm_variants_FINAL \
+	--make-bed \
+	--out KIDNEY_missense_transmemb_chr1_22_without_MHC
+
+# Create dosage files
+plink \
+	--bfile KIDNEY_missense_transmemb_chr1_22_without_MHC \
+	--recodeA \
+	--out KIDNEY_missense_transmembrane_dosage
+
+# Continue according to: 
+# /src/GW_mismatch_TRANSMEMBRANE.R
+
+###############################################################################
+# Kidney expressed proteins only
+
+# Go to uniport.org
+# Using query string:
+# annotation:(type:"tissue specificity" kidney) AND reviewed:yes 
+# AND organism:"Homo sapiens (Human) [9606]"
+# Downloading 2647 reviewed transcripts with extra column "annotation: Ensembl"
+# and download in tab-separated format
+# You can find the file in:
+# /data/uniprot-annotation (type tissue+specificity +Kidney)+reviewed yes--.tab
+
+# Import the list in R and edit according to:
+# /src/Create_kidney_list.R
+
+# You can find the excel in /data/Kidney_separated.xlsx
+
+# Extracting the kidney variants from dataset 
+# (excluding MHC region and including only chromosomes 1-22)
+plink \
+	--bfile KIDNEY_chr1_22_without_MHC \
+	--extract List_of_kidney_variants_FINAL \
+	--make-bed \
+	--out KIDNEY_missense_kidney_chr1_22_without_MHC
+
+# Create dosage files
+plink \
+	--bfile KIDNEY_missense_kidney_chr1_22_without_MHC \
+	--recodeA \
+	--out KIDNEY_missense_KIDNEY_dosage
+
+# Continue according to:
+# /src/GW_mismatch_KIDNEY.R
+
+################################################################################
+# All missense variants
+
+# Extracting all the missense variants from dataset
+plink \
+        --bfile KIDNEY_chr1_22_without_MHC \
+        --extract missense_bim.txt \
+        --make-bed \
+        --out KIDNEY_missense_variants_all
+
+# Create dosage file
+plink \
+        --bfile KIDNEY_missense_variants_all \
+        --recodeA \
+        --out KIDNEY_missense_dosage_without_X_MHC
+
+# Continue according to:
+# /src/GW_mismatch_ALL.R
