@@ -68,33 +68,10 @@ cat missense_variants.txt X_missense_variants_cleaned.txt > ALL_MISSENSE_VARIANT
 # Creating a list of missense variants only containing the position according to 
 # /src/Create_variant_list.R (step 3 in the script)
 
-# Extract
-plink \
-	--bfile KIDNEY_b38_no_relatives_FINAL \
-	--extract missense_pos_FINAL.txt \
-	--make-bed \
-	--out KIDNEY_missense_variants
-
-# PLINK v1.90b6.16 64-bit (17 Feb 2020)          www.cog-genomics.org/plink/1.9/
-# (C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
-# Logging to KIDNEY_missense_variants.log.
-# Options in effect:
-#   --bfile KIDNEY_b38_no_relatives_FINAL
-#   --extract missense_pos_FINAL.txt
-#   --make-bed
-#   --out KIDNEY_missense_variants
-
-# 31992 MB RAM detected; reserving 15996 MB for main workspace.
-# 9085413 variants loaded from .bim file.
-# 1794 people (0 males, 0 females, 1794 ambiguous) loaded from .fam.
-# Ambiguous sex IDs written to KIDNEY_missense_variants.nosex .
-# Error: No variants remaining after --extract.
-
-### Variant extraction (above) wasn't successful (see the error in the output!), 
-# so first editing the variant list according to
+# Then editing the variant list according to
 # /src/Remove_duplicates_and_extract_variants.R
 
-# Then extracting the missense variants from dataset
+# Extract the missense variants from dataset
 plink \
 	--bfile KIDNEY_b38_no_relatives_FINAL \
 	--extract missense_bim.txt \
@@ -106,8 +83,6 @@ plink \
 	--bfile KIDNEY_missense_variants \
 	--recodeA \
 	--out KIDNEY_missense_dosage
-
-# SUCCESSFUL!
 
 ###############################################################################
 # Performing mismatch analyses according to Reindl-Schwaighofer's article
