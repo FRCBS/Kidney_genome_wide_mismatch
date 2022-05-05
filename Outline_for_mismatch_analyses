@@ -97,8 +97,8 @@ plink \
 
 # Go to uniport.org
 # Using query string: 
-# annotation:(type:transmem) OR locations:(location:"Secreted [SL-0243]") OR 
-# keyword:"Transmembrane [KW-0812]" AND reviewed:yes AND organism:"Homo sapiens (Human) [9606]"
+# (annotation:(type:transmem) OR locations:(location:"Secreted [SL-0243]") OR 
+# keyword:"Transmembrane [KW-0812]") AND reviewed:yes AND organism:"Homo sapiens (Human) [9606]"
 
 # Dowloading 7007 reviewed transcripts: /data/uniprot-annotation (type transmem)+OR+locations (location Secre--.tab
 # Copy and paste the text file to excel and divide each ENST-id to separate columns
